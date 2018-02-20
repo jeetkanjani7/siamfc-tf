@@ -2,7 +2,7 @@
 	"n_subseq": 3,
 	"dist_threshold": 20,
 	"stop_on_failure": 0,
-	"dataset": "validation",
-	"video": "all",
+	"dataset": "dataset",
+	"video": "tc_Toyplane_ce",
 	"start_frame": 0
 }

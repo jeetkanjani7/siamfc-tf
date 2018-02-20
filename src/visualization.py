@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'qt')
 
 
 def show_frame(frame, bbox, fig_n):
