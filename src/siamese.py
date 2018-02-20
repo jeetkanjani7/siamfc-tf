@@ -113,7 +113,7 @@ def _create_siamese(net_path, net_x, net_z):
             net_x = tf.nn.max_pool(net_x, [1,_pool_sz,_pool_sz,1], strides=[1,_pool_stride[i],_pool_stride[i],1], padding='VALID', name='pool'+str(i+1))
             net_z = tf.nn.max_pool(net_z, [1,_pool_sz,_pool_sz,1], strides=[1,_pool_stride[i],_pool_stride[i],1], padding='VALID', name='pool'+str(i+1))
 
-    print
+
 
     return net_z, net_x, params_names_list, params_values_list
 
@@ -129,7 +129,6 @@ def _import_from_matconvnet(net_path):
     params_values = params['value'][0]
     params_values_list = [params_values[p] for p in xrange(params_values.size)]
     return params_names_list, params_values_list
-
 
 # find all parameters matching the codename (there should be only one)
 def _find_params(x, params):

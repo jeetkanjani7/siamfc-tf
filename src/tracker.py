@@ -9,7 +9,7 @@ import csv
 import numpy as np
 from PIL import Image
 import time
-
+from scipy.misc import imsave
 import src.siamese as siam
 from src.visualization import show_frame, show_crops, show_scores
 
@@ -32,7 +32,7 @@ def tracker(hp, run, design, frame_name_list, pos_x, pos_y, target_w, target_h, 
     context = design.context*(target_w+target_h)
     z_sz = np.sqrt(np.prod((target_w+context)*(target_h+context)))
     x_sz = float(design.search_sz) / design.exemplar_sz * z_sz
-
+    print(z_sz)    
     # thresholds to saturate patches shrinking/growing
     min_z = hp.scale_min * z_sz
     max_z = hp.scale_max * z_sz
@@ -62,12 +62,13 @@ def tracker(hp, run, design, frame_name_list, pos_x, pos_y, target_w, target_h, 
                                                                         siam.pos_y_ph: pos_y,
                                                                         siam.z_sz_ph: z_sz,
                                                                         filename: frame_name_list[0]})
+                    
         new_templates_z_ = templates_z_
 
         t_start = time.time()
 
         # Get an image from the queue
-        for i in range(1, num_frames):        
+        for i in range(1, num_frames/2):        
             scaled_exemplar = z_sz * scale_factors
             scaled_search_area = x_sz * scale_factors
             scaled_target_w = target_w * scale_factors
@@ -89,16 +90,20 @@ def tracker(hp, run, design, frame_name_list, pos_x, pos_y, target_w, target_h, 
             scores_[2,:,:] = hp.scale_penalty*scores_[2,:,:]
             # find scale with highest peak (after penalty)
             new_scale_id = np.argmax(np.amax(scores_, axis=(1,2)))
+           # print('Scale ID: ' + str(scale_id))
             # update scaled sizes
-            x_sz = (1-hp.scale_lr)*x_sz + hp.scale_lr*scaled_search_area[new_scale_id]        
+            print('Scaled search area:' + str(scaled_search_area[new_scale_id]))
+            x_sz = (1-hp.scale_lr)*x_sz + hp.scale_lr*scaled_search_area[new_scale_id]
+            print('X_size: ' + str(x_sz))
             target_w = (1-hp.scale_lr)*target_w + hp.scale_lr*scaled_target_w[new_scale_id]
             target_h = (1-hp.scale_lr)*target_h + hp.scale_lr*scaled_target_h[new_scale_id]
             # select response with new_scale_id
             score_ = scores_[new_scale_id,:,:]
             score_ = score_ - np.min(score_)
             score_ = score_/np.sum(score_)
-            # apply displacement penalty
+            # apply displacement penaltyt
             score_ = (1-hp.window_influence)*score_ + hp.window_influence*penalty
+            imsave("./scores/"+str(i)+".png", score_)
             pos_x, pos_y = _update_target_position(pos_x, pos_y, score_, final_score_sz, design.tot_stride, design.search_sz, hp.response_up, x_sz)
             # convert <cx,cy,w,h> to <x,y,w,h> and save output
             bboxes[i,:] = pos_x-target_w/2, pos_y-target_h/2, target_w, target_h
