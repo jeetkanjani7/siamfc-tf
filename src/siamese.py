@@ -33,7 +33,6 @@ def build_tracking_graph(final_score_sz, design, env):
     # image_reader = tf.WholeFileReader()
     # # Read a whole file from the queue
     # image_name, image_file = image_reader.read(filename_queue)
-
     filename = tf.placeholder(tf.string, [], name='filename')
     image_file = tf.read_file(filename)
     # Decode the image as a JPEG file, this will turn it into a Tensor

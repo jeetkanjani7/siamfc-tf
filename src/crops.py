@@ -60,6 +60,7 @@ def extract_crops_z(im, npad, pos_x, pos_y, sz_src, sz_dst):
     tr_y = npad + tf.cast(tf.round(pos_y - c), tf.int32)
     width = tf.round(pos_x + c) - tf.round(pos_x - c)
     height = tf.round(pos_y + c) - tf.round(pos_y - c)
+
     crop = tf.image.crop_to_bounding_box(im,
                                          tf.cast(tr_y, tf.int32),
                                          tf.cast(tr_x, tf.int32),
@@ -71,7 +72,7 @@ def extract_crops_z(im, npad, pos_x, pos_y, sz_src, sz_dst):
     return crops
 
 
-def extract_crops_x(im, npad, pos_x, pos_y, sz_src0, sz_src1, sz_src2, sz_dst):
+def extract_crops_x(im, npad, pos_x, pos_y, sz_src0, sz_src1, sz_src2, sc_whole, sz_dst):
     # take center of the biggest scaled source patch
     c = sz_src2 / 2
     # get top-right corner of bbox and consider padding
@@ -101,8 +102,11 @@ def extract_crops_x(im, npad, pos_x, pos_y, sz_src0, sz_src1, sz_src2, sz_dst):
                                             tf.cast(tf.round(sz_src1), tf.int32),
                                             tf.cast(tf.round(sz_src1), tf.int32))
     crop_s1 = tf.image.resize_images(crop_s1, [sz_dst, sz_dst], method=tf.image.ResizeMethod.BILINEAR)
+    
     crop_s2 = tf.image.resize_images(search_area, [sz_dst, sz_dst], method=tf.image.ResizeMethod.BILINEAR)
-    crops = tf.stack([crop_s0, crop_s1, crop_s2])
+    crop_whole = tf.image.resize_images(im, [sz_dst, sz_dst], method = tf.image.ResizeMethod.BILINEAR)
+    crops = tf.stack([crop_s0, crop_s1, crop_s2, crop_whole])
+    
     return crops
 
 # Can't manage to use tf.crop_and_resize, which would be ideal!
